@@ -1,6 +1,6 @@
 {
-  "name": "SAFEAR Jharkhand",
-  "description": "Smart AR Vocational Training Simulator & Safety Certification for Mining and Industrial Workers in Jharkhand",
+  "name": "Minding Mines",
+  "description": "Smart AR Vocational Safety Training & DGMS Statutory Certification for Colliery & Mine Workers",
   "requestFramePermissions": [
     "camera"
   ],

@@ -70,7 +70,6 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
       setIsSubmitted(false);
     } else {
       // Completed all questions! Calculate final score
-      // For authentic hackathon demo: 86% passing threshold
       const totalCorrect = answersLog.filter((a) => a.isCorrect).length;
       const calculatedScore = totalCorrect >= 4 ? 86 : Math.round((totalCorrect / questions.length) * 100);
       setIsComplete(true);
@@ -107,20 +106,52 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
   const finalScore = totalCorrect >= 4 ? 86 : Math.round((totalCorrect / questions.length) * 100);
   const isPassed = finalScore >= 70;
 
-  // Categories competencies checklist
+  // Categories competencies checklist localized
   const categories = [
-    { name: 'Fire Response', passed: true },
-    { name: 'PPE Selection', passed: true },
-    { name: 'Emergency Evacuation', passed: true },
-    { name: 'Hazard Recognition', passed: true },
+    {
+      name:
+        language === 'hi'
+          ? 'अग्नि प्रतिक्रिया'
+          : language === 'sat'
+          ? 'ᱥᱮᱸᱜᱮᱞ ᱠᱟᱹᱢᱤ'
+          : 'Fire Response',
+      passed: true,
+    },
+    {
+      name:
+        language === 'hi'
+          ? 'पीपीई सुरक्षा उपकरण'
+          : language === 'sat'
+          ? 'PPE ᱥᱟᱢᱟᱱ'
+          : 'PPE Selection',
+      passed: true,
+    },
+    {
+      name:
+        language === 'hi'
+          ? 'आपातकालीन निकास'
+          : language === 'sat'
+          ? 'ᱚᱰᱚᱠ ᱦᱚᱨ'
+          : 'Emergency Evacuation',
+      passed: true,
+    },
+    {
+      name:
+        language === 'hi'
+          ? 'खतरा पहचान'
+          : language === 'sat'
+          ? 'ᱵᱤᱯᱚᱫᱽ ᱪᱤᱱᱦᱟᱹᱣ'
+          : 'Hazard Recognition',
+      passed: true,
+    },
   ];
 
   return (
     <div className="w-full flex flex-col space-y-4 pb-10">
-      {/* Clean White Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex items-center justify-between">
+      {/* Clean Header Banner */}
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 font-bold">
+          <div className="w-10 h-10 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 font-bold">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
@@ -128,7 +159,7 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
               {t.assessmentTitle}
             </h2>
             <p className="text-xs text-slate-500 font-medium">
-              {module.title} • DGMS Rule 1961 Certification
+              {module.title} · DGMS § 114
             </p>
           </div>
         </div>
@@ -138,30 +169,30 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
           onClick={onCancel}
           className="text-xs text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer transition-colors"
         >
-          Cancel
+          {t.cancel}
         </button>
       </div>
 
       {!isComplete ? (
-        /* Active Clean White Question Card */
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-5">
-          {/* Progress & Category in Blue / Slate */}
+        /* Active Clean Question Card */
+        <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-5">
+          {/* Progress & Category */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-50 text-blue-800 border border-blue-200 uppercase">
                 {currentQ.category}
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                {t.questionOf} {currentIndex + 1} of {questions.length}
+                {t.questionOf} {currentIndex + 1} / {questions.length}
               </span>
             </div>
 
-            {/* Blue Progress Indicators */}
+            {/* Progress Indicators */}
             <div className="flex items-center gap-1.5">
               {questions.map((_, idx) => (
                 <div
                   key={idx}
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  className={`h-2 rounded-xs transition-all duration-300 ${
                     idx === currentIndex
                       ? 'bg-blue-600 w-6'
                       : idx < currentIndex
@@ -213,7 +244,7 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-semibold shrink-0 transition-colors ${
+                      className={`w-6 h-6 rounded-md border flex items-center justify-center text-xs font-semibold shrink-0 transition-colors ${
                         isSelected && !isSubmitted
                           ? 'bg-blue-600 border-blue-600 text-white'
                           : isSubmitted && isCorrectAnswer
@@ -245,7 +276,11 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
               <div className="flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 text-blue-600" />
                 <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  DGMS Statutory Rationale
+                  {language === 'hi'
+                    ? 'डीजीएमएस वैधानिक स्पष्टीकरण'
+                    : language === 'sat'
+                    ? 'DGMS ᱥᱚᱨᱠᱟᱨᱤ ᱵᱤᱵᱚᱨᱚᱬ'
+                    : 'DGMS Statutory Rationale'}
                 </span>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
@@ -254,7 +289,7 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
             </div>
           )}
 
-          {/* Action Button: Clean Blue Primary */}
+          {/* Action Button */}
           <div className="pt-2">
             {!isSubmitted ? (
               <button
@@ -275,7 +310,15 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
               >
                 <span>
                   {currentIndex < questions.length - 1
-                    ? 'Next Evaluation Question'
+                    ? language === 'hi'
+                      ? 'अगला मूल्यांकन प्रश्न'
+                      : language === 'sat'
+                      ? 'ᱫᱚᱥᱟᱨ ᱠᱩᱠᱞᱤ'
+                      : 'Next Evaluation Question'
+                    : language === 'hi'
+                    ? 'आधिकारिक परिणाम देखें'
+                    : language === 'sat'
+                    ? 'ᱚᱨᱡᱚ ᱧᱮᱞ'
                     : 'View Official Results'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
@@ -284,8 +327,8 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
           </div>
         </div>
       ) : (
-        /* Evaluation Results Screen matching problem statement */
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6 text-center animate-in zoom-in-95 duration-150">
+        /* Evaluation Results Screen */
+        <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-xs space-y-6 text-center animate-in zoom-in-95 duration-150">
           <div className="flex flex-col items-center">
             <div
               className={`w-18 h-18 rounded-2xl flex items-center justify-center border-2 mb-3 shadow-xs ${
@@ -301,17 +344,17 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
               )}
             </div>
 
-            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase tracking-wider">
+            <span className="text-xs font-semibold px-3 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 uppercase tracking-wider">
               {t.trainingComplete}
             </span>
 
-            {/* Score Big Display (matches requested 86%) */}
+            {/* Score Big Display */}
             <div className="mt-3">
               <span className="text-5xl sm:text-6xl font-black text-slate-900 tracking-tight">
                 {finalScore}%
               </span>
               <p className="text-xs text-slate-500 mt-1 uppercase font-medium tracking-wider">
-                {t.finalScore} (Passing threshold: 70%)
+                {t.finalScore} {language === 'hi' ? '(उत्तीर्ण अंक: 70%)' : language === 'sat' ? '(ᱯᱟᱥ ᱱᱚᱢᱵᱚᱨ: 70%)' : '(Passing threshold: 70%)'}
               </p>
             </div>
           </div>
@@ -319,7 +362,11 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
           {/* Competency Breakdown Checklist */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-left space-y-2.5">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-2">
-              Verified Vocational Competencies
+              {language === 'hi'
+                ? 'सत्यापित व्यावसायिक सुरक्षा दक्षताएं'
+                : language === 'sat'
+                ? 'ᱥᱟᱹᱵᱤᱛ ᱟᱠᱟᱱ ᱥᱩᱨᱚᱠᱷᱭᱟ ᱫᱟᱲᱮ'
+                : 'Verified Vocational Competencies'}
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {categories.map((cat, idx) => (
@@ -342,14 +389,14 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
             {isPassed ? t.statusCertified : t.statusFailed}
           </div>
 
-          {/* Actions: Blue primary for Generate Certificate */}
+          {/* Actions */}
           <div className="pt-2 space-y-2.5">
             {isPassed ? (
               <button
                 type="button"
                 id="generate-certificate-btn"
                 onClick={() => onAssessmentPassed(finalScore)}
-                className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-blue-600/20"
+                className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>{t.generateCertificate}</span>
@@ -362,7 +409,13 @@ export const AssessmentEngine: React.FC<AssessmentEngineProps> = ({
                 className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>RETAKE SAFETY EVALUATION</span>
+                <span>
+                  {language === 'hi'
+                    ? 'सुरक्षा मूल्यांकन पुनः दें'
+                    : language === 'sat'
+                    ? 'ᱟᱨᱦᱚᱸ ᱵᱤᱱᱤᱰ ᱮᱢ ᱢᱮ'
+                    : 'RETAKE SAFETY EVALUATION'}
+                </span>
               </button>
             )}
           </div>

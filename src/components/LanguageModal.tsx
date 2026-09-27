@@ -135,7 +135,7 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({
         </div>
 
         <div className="px-5 py-2.5 bg-neutral-950/80 border-t border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-400">
-          <span>🟢 Offline Language Pack Cached</span>
+          <span>Offline Language Pack Cached</span>
           <span>DGMS Standard 2026</span>
         </div>
       </div>

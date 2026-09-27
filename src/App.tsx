@@ -10,14 +10,13 @@ import { initialWorker, modulesData, defaultCertificate } from './data/mockData'
 import { defaultAdminProfile } from './data/authData';
 import { LanguageModal } from './components/LanguageModal';
 import { LandingScreen } from './components/LandingScreen';
-import { WorkerLogin } from './components/WorkerLogin';
-import { AdminLogin } from './components/AdminLogin';
 import { WorkerDashboard } from './components/WorkerDashboard';
 import { ARSimulationView } from './components/ARSimulationView';
 import { AssessmentEngine } from './components/AssessmentEngine';
 import { DigitalCertificateView } from './components/DigitalCertificateView';
 import { QRVerificationModal } from './components/QRVerificationModal';
 import { AdminComplianceDashboard } from './components/AdminComplianceDashboard';
+import { ARSimulationScreen } from './components/ARSimulationScreen';
 import { DeviceSimulatorFrame, AppView } from './components/DeviceSimulatorFrame';
 
 type WorkerScreen = 'dashboard' | 'ar-simulation' | 'assessment' | 'certificate';
@@ -89,9 +88,6 @@ export default function App() {
   // Modals
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState<boolean>(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState<boolean>(false);
-
-  // Responsive device frame toggle
-  const [isMobileFrame, setIsMobileFrame] = useState<boolean>(true);
 
   // Save changes to localStorage for offline simulation
   useEffect(() => {
@@ -255,52 +251,43 @@ export default function App() {
       onSelectLanguage={(lang) => setLanguage(lang)}
       onWorkerLogout={handleWorkerLogout}
       onAdminLogout={handleAdminLogout}
-      isMobileFrame={isMobileFrame}
-      onToggleMobileFrame={() => setIsMobileFrame((prev) => !prev)}
     >
-      {currentView === 'landing' ? (
-        /* Landing / Splash Screen */
+      {currentView === 'landing' || currentView === 'worker-login' || currentView === 'admin-login' ? (
+        /* Minding Mines Official Login Portal */
         <LandingScreen
           language={language}
-          isWorkerLoggedIn={isWorkerLoggedIn}
-          isAdminLoggedIn={isAdminLoggedIn}
-          workerName={worker.name}
-          adminName={adminProfile.name}
-          onStartTraining={() => {
+          initialRole={currentView === 'admin-login' ? 'admin' : 'worker'}
+          onWorkerLoginSuccess={handleWorkerLoginSuccess}
+          onAdminLoginSuccess={handleAdminLoginSuccess}
+          onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
+        />
+      ) : currentView === 'ar-simulation' ? (
+        /* Dedicated AR Simulation Screen */
+        <ARSimulationScreen
+          language={language}
+          initialModuleId={activeModuleId}
+          onBackToDashboard={() => {
             if (isWorkerLoggedIn) {
               setCurrentView('worker');
               setWorkerScreen('dashboard');
             } else {
-              setCurrentView('worker-login');
+              setCurrentView('landing');
             }
           }}
-          onOpenAdmin={() => {
-            if (isAdminLoggedIn) {
-              setCurrentView('admin');
-            } else {
-              setCurrentView('admin-login');
-            }
+          onProceedToAssessment={(moduleId) => {
+            setActiveModuleId(moduleId);
+            setCurrentView('worker');
+            setWorkerScreen('assessment');
           }}
-          onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
-        />
-      ) : currentView === 'worker-login' ? (
-        /* Dedicated Worker App Login Screen */
-        <WorkerLogin
-          language={language}
-          onLoginSuccess={handleWorkerLoginSuccess}
-          onSwitchToAdmin={() => setCurrentView(isAdminLoggedIn ? 'admin' : 'admin-login')}
-          onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
-        />
-      ) : currentView === 'admin-login' ? (
-        /* Dedicated DGMS Admin Portal Login Screen */
-        <AdminLogin
-          onLoginSuccess={handleAdminLoginSuccess}
-          onSwitchToWorker={() => setCurrentView(isWorkerLoggedIn ? 'worker' : 'worker-login')}
+          onStartWorkerApp={() => {
+            setCurrentView(isWorkerLoggedIn ? 'worker' : 'landing');
+          }}
         />
       ) : currentView === 'admin' ? (
         /* Admin Compliance Dashboard View */
         <AdminComplianceDashboard
           admin={adminProfile}
+          language={language}
           onSwitchToWorkerApp={() => setCurrentView(isWorkerLoggedIn ? 'worker' : 'worker-login')}
           onVerifyCertificateId={(id) => handleOpenQRVerification(id)}
           onLogout={handleAdminLogout}
@@ -316,6 +303,7 @@ export default function App() {
               onStartModule={handleStartModule}
               onViewCertificate={handleViewCertificate}
               onOpenQRVerification={handleOpenQRVerification}
+              onOpenARSimulation={() => setCurrentView('ar-simulation')}
               onLogout={handleWorkerLogout}
             />
           )}
@@ -326,6 +314,11 @@ export default function App() {
               language={language}
               onBackToDashboard={() => setWorkerScreen('dashboard')}
               onCompleteSimulation={handleFinishSimulation}
+              onSelectModule={(modId) => setActiveModuleId(modId)}
+              onProceedToAssessment={(modId) => {
+                setActiveModuleId(modId);
+                setWorkerScreen('assessment');
+              }}
             />
           )}
 

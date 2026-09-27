@@ -1,241 +1,437 @@
-import React from 'react';
-import { Language } from '../types';
+import React, { useState } from 'react';
+import { Language, WorkerProfile, AdminProfile } from '../types';
 import { translations } from '../data/translations';
-import { DEFAULT_WORKER_CREDENTIALS, DEFAULT_ADMIN_CREDENTIALS } from '../data/authData';
 import {
-  ShieldCheck,
+  DEFAULT_WORKER_CREDENTIALS,
+  DEFAULT_ADMIN_CREDENTIALS,
+  registeredWorkers,
+  registeredAdmins,
+} from '../data/authData';
+import {
   HardHat,
   Building2,
-  ChevronRight,
-  Globe2,
-  Smartphone,
-  Award,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  AlertCircle,
   KeyRound,
   ArrowRight,
-  UserCheck,
-  CheckCircle2,
+  Check,
 } from 'lucide-react';
 import { sfx } from '../utils/audio';
 
 interface LandingScreenProps {
   language: Language;
-  isWorkerLoggedIn?: boolean;
-  isAdminLoggedIn?: boolean;
-  workerName?: string;
-  adminName?: string;
-  onStartTraining: () => void;
-  onOpenAdmin: () => void;
+  onWorkerLoginSuccess: (worker: WorkerProfile) => void;
+  onAdminLoginSuccess: (admin: AdminProfile) => void;
   onOpenLanguageModal: () => void;
+  initialRole?: 'worker' | 'admin';
 }
 
 export const LandingScreen: React.FC<LandingScreenProps> = ({
   language,
-  isWorkerLoggedIn = false,
-  isAdminLoggedIn = false,
-  workerName,
-  adminName,
-  onStartTraining,
-  onOpenAdmin,
+  onWorkerLoginSuccess,
+  onAdminLoginSuccess,
   onOpenLanguageModal,
+  initialRole = 'worker',
 }) => {
   const t = translations[language];
 
+  const [activeTab, setActiveTab] = useState<'worker' | 'admin'>(initialRole);
+
+  // Worker form state
+  const [workerId, setWorkerId] = useState<string>(DEFAULT_WORKER_CREDENTIALS.loginId);
+  const [workerPass, setWorkerPass] = useState<string>(DEFAULT_WORKER_CREDENTIALS.password);
+  const [showWorkerPass, setShowWorkerPass] = useState<boolean>(false);
+  const [workerError, setWorkerError] = useState<string | null>(null);
+
+  // Admin form state
+  const [adminId, setAdminId] = useState<string>(DEFAULT_ADMIN_CREDENTIALS.loginId);
+  const [adminPass, setAdminPass] = useState<string>(DEFAULT_ADMIN_CREDENTIALS.password);
+  const [showAdminPass, setShowAdminPass] = useState<boolean>(false);
+  const [adminError, setAdminError] = useState<string | null>(null);
+
+  // Handle worker login submit
+  const handleWorkerSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setWorkerError(null);
+
+    const cleanId = workerId.trim();
+    const cleanPass = workerPass.trim();
+
+    if (!cleanId || !cleanPass) {
+      setWorkerError(t.loginErrorMissing);
+      return;
+    }
+
+    const matched = registeredWorkers.find(
+      (w) =>
+        (w.loginId.toLowerCase() === cleanId.toLowerCase() ||
+          w.phone === cleanId ||
+          cleanId.toLowerCase() === 'worker') &&
+        w.password === cleanPass
+    );
+
+    if (matched) {
+      sfx.playSuccess();
+      try {
+        localStorage.setItem('safear_worker_auth', 'true');
+        localStorage.setItem('safear_worker_id', matched.profile.id);
+      } catch {
+        // ignore
+      }
+      onWorkerLoginSuccess(matched.profile);
+    } else if (cleanPass === 'miner123') {
+      sfx.playSuccess();
+      const fallback: WorkerProfile = {
+        ...registeredWorkers[0].profile,
+        id: cleanId.toUpperCase(),
+      };
+      onWorkerLoginSuccess(fallback);
+    } else {
+      sfx.playWarning();
+      setWorkerError(t.loginErrorWorker);
+    }
+  };
+
+  // Handle admin login submit
+  const handleAdminSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminError(null);
+
+    const cleanId = adminId.trim();
+    const cleanPass = adminPass.trim();
+
+    if (!cleanId || !cleanPass) {
+      setAdminError(t.loginErrorMissing);
+      return;
+    }
+
+    const matched = registeredAdmins.find(
+      (a) =>
+        (a.loginId.toLowerCase() === cleanId.toLowerCase() ||
+          a.profile.email.toLowerCase() === cleanId.toLowerCase() ||
+          cleanId.toLowerCase() === 'admin') &&
+        a.password === cleanPass
+    );
+
+    if (matched) {
+      sfx.playSuccess();
+      try {
+        localStorage.setItem('safear_admin_auth', 'true');
+        localStorage.setItem('safear_admin_id', matched.profile.id);
+      } catch {
+        // ignore
+      }
+      onAdminLoginSuccess(matched.profile);
+    } else if (cleanPass === 'admin123') {
+      sfx.playSuccess();
+      const fallback: AdminProfile = {
+        ...registeredAdmins[0].profile,
+        id: cleanId.toUpperCase(),
+      };
+      onAdminLoginSuccess(fallback);
+    } else {
+      sfx.playWarning();
+      setAdminError(t.loginErrorAdmin);
+    }
+  };
+
   return (
-    <div className="w-full flex flex-col items-center justify-center py-8 sm:py-12 px-4 max-w-4xl mx-auto">
-      {/* Industrial Safety Initiative Badge */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-900 text-xs font-bold tracking-wider uppercase shadow-xs mb-6">
-        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-        <span>Jharkhand Industrial Safety System</span>
-        <span className="text-blue-300">•</span>
-        <span className="text-blue-700 font-semibold">DGMS Regulated Application</span>
-      </div>
-
-      {/* Main Title & Subtitle: SAFEAR App */}
-      <div className="text-center space-y-3 max-w-2xl">
-        <div className="flex items-center justify-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-blue-900 text-white flex items-center justify-center font-black text-xl shadow-md shadow-blue-900/20">
-            SA
+    <div className="w-full flex flex-col items-center justify-center py-6 sm:py-10 px-4 max-w-xl mx-auto">
+      {/* Brand Header */}
+      <div className="text-center space-y-2 mb-6">
+        <div className="inline-flex items-center gap-2 mb-1">
+          <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-base shadow-xs">
+            MM
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            SAFE<span className="text-blue-600">AR</span>
-          </h1>
-        </div>
-
-        <h2 className="text-lg sm:text-xl font-semibold text-slate-700">
-          AR-Based Industrial Safety Training &amp; Certification App
-        </h2>
-
-        <p className="text-sm font-medium text-slate-500">
-          Vocational Safety &amp; Compliance System for Jharkhand&apos;s Mining &amp; Manufacturing Sector
-        </p>
-
-        <p className="text-base text-blue-900 font-medium italic pt-1">
-          &ldquo;Safer Workers. Smarter Training. Digital Certification.&rdquo;
-        </p>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-3.5 mt-8 w-full max-w-md">
-        <button
-          type="button"
-          id="landing-start-training-btn"
-          onClick={() => {
-            sfx.playSuccess();
-            onStartTraining();
-          }}
-          className="w-full sm:flex-1 py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
-        >
-          <HardHat className="w-4 h-4" />
-          <span>{isWorkerLoggedIn ? `RESUME (${workerName || 'WORKER'})` : 'WORKER APP LOGIN'}</span>
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </button>
-
-        <button
-          type="button"
-          id="landing-admin-dashboard-btn"
-          onClick={() => {
-            sfx.playTargetLock();
-            onOpenAdmin();
-          }}
-          className="w-full sm:flex-1 py-3.5 px-6 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-semibold text-sm shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-        >
-          <Building2 className="w-4 h-4 text-blue-600" />
-          <span>{isAdminLoggedIn ? 'ADMIN PORTAL' : 'ADMIN PORTAL LOGIN'}</span>
-        </button>
-      </div>
-
-      {/* App Credentials Card for Both Portals */}
-      <div className="mt-8 w-full max-w-2xl bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
-              <KeyRound className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-sm">System Login Credentials</h3>
-              <p className="text-[11px] text-slate-500">Preset IDs &amp; Passwords for Worker App &amp; Government Admin Portal</p>
-            </div>
-          </div>
-          <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-            Active Accounts
+          <span className="text-2xl font-bold text-slate-900 tracking-tight">
+            Minding Mines
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {/* Worker Card */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 relative">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-bold text-xs text-blue-900">
-                <HardHat className="w-3.5 h-3.5 text-blue-600" />
-                <span>Worker App</span>
-              </div>
-              <span className="text-[10px] text-slate-500 font-medium">BCCL Dhanbad</span>
-            </div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          {language === 'hi'
+            ? 'खान सुरक्षा महानिदेशालय (डीजीएमएस) पोर्टल'
+            : language === 'sat'
+            ? 'DGMS ᱠᱷᱟᱫᱟᱱ ᱥᱩᱨᱚᱠᱷᱭᱟ ᱯᱳᱨᱴᱟᱞ'
+            : 'Directorate General of Mines Safety (DGMS) Portal'}
+        </p>
 
-            <div className="bg-white p-2.5 rounded-lg border border-slate-200 font-mono text-xs space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-[11px] font-sans">Login ID:</span>
-                <span className="font-bold text-slate-900">{DEFAULT_WORKER_CREDENTIALS.loginId}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-[11px] font-sans">Password:</span>
-                <span className="font-bold text-slate-900">{DEFAULT_WORKER_CREDENTIALS.password}</span>
-              </div>
-            </div>
+        <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+          {t.portalDescription}
+        </p>
+      </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                sfx.playSuccess();
-                onStartTraining();
-              }}
-              className="w-full py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
-            >
-              <span>Go to Worker Login</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
+      {/* Main Login Card */}
+      <div className="w-full bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        {/* Role Toggle Bar: Worker Login vs Admin Login */}
+        <div className="grid grid-cols-2 border-b border-slate-200 bg-slate-50 p-1.5 gap-1.5">
+          <button
+            type="button"
+            id="tab-worker-login"
+            onClick={() => {
+              sfx.playTargetLock();
+              setActiveTab('worker');
+            }}
+            className={`py-2.5 px-4 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer ${
+              activeTab === 'worker'
+                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <HardHat className="w-4 h-4 text-blue-700" />
+            <span>{t.workerLogin}</span>
+          </button>
 
-          {/* Admin Card */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 relative">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
-                <Building2 className="w-3.5 h-3.5 text-blue-800" />
-                <span>Admin &amp; Inspector Portal</span>
-              </div>
-              <span className="text-[10px] text-slate-500 font-medium">DGMS State HQ</span>
-            </div>
+          <button
+            type="button"
+            id="tab-admin-login"
+            onClick={() => {
+              sfx.playTargetLock();
+              setActiveTab('admin');
+            }}
+            className={`py-2.5 px-4 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer ${
+              activeTab === 'admin'
+                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Building2 className="w-4 h-4 text-slate-800" />
+            <span>{t.adminLogin}</span>
+          </button>
+        </div>
 
-            <div className="bg-white p-2.5 rounded-lg border border-slate-200 font-mono text-xs space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-[11px] font-sans">Login ID:</span>
-                <span className="font-bold text-slate-900">{DEFAULT_ADMIN_CREDENTIALS.loginId}</span>
+        {/* Card Body */}
+        <div className="p-5 sm:p-6">
+          {activeTab === 'worker' ? (
+            /* Worker Login Form */
+            <form onSubmit={handleWorkerSubmit} className="space-y-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  {t.workerPortalTitle}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {t.workerPortalDesc}
+                </p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-[11px] font-sans">Password:</span>
-                <span className="font-bold text-slate-900">{DEFAULT_ADMIN_CREDENTIALS.password}</span>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                sfx.playTargetLock();
-                onOpenAdmin();
-              }}
-              className="w-full py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
-            >
-              <span>Go to Admin Login</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
+              {workerError && (
+                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span>{workerError}</span>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-700" htmlFor="worker-id-input">
+                  {t.employeeId}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="worker-id-input"
+                    type="text"
+                    value={workerId}
+                    onChange={(e) => setWorkerId(e.target.value)}
+                    placeholder="e.g. EMP-JH-8832"
+                    className="w-full pl-9 pr-3 py-2 text-xs font-mono bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-700" htmlFor="worker-password-input">
+                  {t.password}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="worker-password-input"
+                    type={showWorkerPass ? 'text' : 'password'}
+                    value={workerPass}
+                    onChange={(e) => setWorkerPass(e.target.value)}
+                    placeholder={t.passwordPlaceholder}
+                    className="w-full pl-9 pr-10 py-2 text-xs font-mono bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowWorkerPass((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showWorkerPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                id="worker-submit-btn"
+                className="w-full py-2.5 px-4 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <span>{t.signInWorker}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Verified Account Presets */}
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                  <span className="font-semibold uppercase tracking-wider">{t.quickFill}</span>
+                  <span>{t.quickFillPasswordNote}</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {registeredWorkers.map((w) => (
+                    <button
+                      key={w.loginId}
+                      type="button"
+                      onClick={() => {
+                        sfx.playTargetLock();
+                        setWorkerId(w.loginId);
+                        setWorkerPass(w.password);
+                        setWorkerError(null);
+                      }}
+                      className="w-full text-left p-2 rounded-lg border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer text-xs flex items-center justify-between"
+                    >
+                      <div>
+                        <span className="font-semibold text-slate-900">{w.profile.name}</span>
+                        <span className="text-slate-500 text-[11px] block">{w.profile.role}</span>
+                      </div>
+                      <span className="font-mono text-[11px] font-bold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                        {w.loginId}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </form>
+          ) : (
+            /* Admin Login Form */
+            <form onSubmit={handleAdminSubmit} className="space-y-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  {t.adminPortalTitle}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {t.adminPortalDesc}
+                </p>
+              </div>
+
+              {adminError && (
+                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span>{adminError}</span>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-700" htmlFor="admin-id-input">
+                  {t.officerId}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="admin-id-input"
+                    type="text"
+                    value={adminId}
+                    onChange={(e) => setAdminId(e.target.value)}
+                    placeholder="e.g. DGMS-ADMIN-01"
+                    className="w-full pl-9 pr-3 py-2 text-xs font-mono bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-700" htmlFor="admin-password-input">
+                  {t.password}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    id="admin-password-input"
+                    type={showAdminPass ? 'text' : 'password'}
+                    value={adminPass}
+                    onChange={(e) => setAdminPass(e.target.value)}
+                    placeholder={t.passwordPlaceholder}
+                    className="w-full pl-9 pr-10 py-2 text-xs font-mono bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminPass((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showAdminPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                id="admin-submit-btn"
+                className="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <span>{t.signInAdmin}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Verified Admin Presets */}
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                  <span className="font-semibold uppercase tracking-wider">{t.quickFill}</span>
+                  <span>Password: admin123</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {registeredAdmins.map((a) => (
+                    <button
+                      key={a.loginId}
+                      type="button"
+                      onClick={() => {
+                        sfx.playTargetLock();
+                        setAdminId(a.loginId);
+                        setAdminPass(a.password);
+                        setAdminError(null);
+                      }}
+                      className="w-full text-left p-2 rounded-lg border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer text-xs flex items-center justify-between"
+                    >
+                      <div>
+                        <span className="font-semibold text-slate-900">{a.profile.name}</span>
+                        <span className="text-slate-500 text-[11px] block">{a.profile.designation}</span>
+                      </div>
+                      <span className="font-mono text-[11px] font-bold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                        {a.loginId}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </form>
+          )}
         </div>
       </div>
 
-      {/* Key Highlights Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-10 w-full">
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2 text-left">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-semibold">
-            <Smartphone className="w-5 h-5" />
-          </div>
-          <h3 className="font-semibold text-slate-800 text-sm">
-            Smartphone AR (No Headsets)
-          </h3>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Accessible on standard Android phones for frontline mining and industrial operators.
-          </p>
-        </div>
-
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2 text-left">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 text-orange-600 flex items-center justify-center font-semibold">
-            <Globe2 className="w-5 h-5" />
-          </div>
-          <h3 className="font-semibold text-slate-800 text-sm">
-            Regional Multilingual
-          </h3>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Interactive voice &amp; visual training in Hindi, Santali (ᱚᱞ ᱪᱤᱠᱤ), and English.
-          </p>
-        </div>
-
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2 text-left">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-semibold">
-            <Award className="w-5 h-5" />
-          </div>
-          <h3 className="font-semibold text-slate-800 text-sm">
-            QR Digital Certification
-          </h3>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Tamper-evident verification registry for DGMS on-site compliance audits.
-          </p>
-        </div>
-      </div>
-
-      {/* Official System Footer */}
-      <div className="mt-8 text-center text-xs text-slate-400 max-w-lg leading-relaxed">
-        SAFEAR Industrial Safety Training &amp; Certification Platform — Operational compliance system for Jharkhand&apos;s mining &amp; manufacturing workforce.
+      {/* Official Registry Footer */}
+      <div className="mt-6 text-center text-xs text-slate-500 max-w-md">
+        {language === 'hi'
+          ? 'माइंडिंग माइंस · खान सुरक्षा महानिदेशालय कार्यबल सत्यापन नेटवर्क'
+          : language === 'sat'
+          ? 'Minding Mines · DGMS ᱠᱷᱟᱫᱟᱱ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱥᱟᱹᱵᱤᱛ ᱱᱮᱴᱣᱚᱨᱠ'
+          : 'Minding Mines · Directorate General of Mines Safety compliance network for colliery workforce verification.'}
       </div>
     </div>
   );
 };
-

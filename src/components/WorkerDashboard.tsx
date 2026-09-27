@@ -2,6 +2,7 @@ import React from 'react';
 import { WorkerProfile, Language } from '../types';
 import { translations } from '../data/translations';
 import { modulesData } from '../data/mockData';
+import { VisualProgressTracker } from './VisualProgressTracker';
 import {
   Flame,
   Skull,
@@ -17,6 +18,8 @@ import {
   QrCode,
   Check,
   LogOut,
+  Camera,
+  Crosshair,
 } from 'lucide-react';
 import { sfx } from '../utils/audio';
 
@@ -27,6 +30,7 @@ interface WorkerDashboardProps {
   onStartModule: (moduleId: string) => void;
   onViewCertificate: (certId?: string) => void;
   onOpenQRVerification: (certId?: string) => void;
+  onOpenARSimulation?: () => void;
   onLogout?: () => void;
 }
 
@@ -37,6 +41,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
   onStartModule,
   onViewCertificate,
   onOpenQRVerification,
+  onOpenARSimulation,
   onLogout,
 }) => {
   const t = translations[language];
@@ -49,10 +54,10 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
   return (
     <div className="w-full flex flex-col space-y-4 pb-10">
       {/* Top Gov Tech Header Banner */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs">
+      <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-xs">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+            <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
               JH
             </div>
             <div>
@@ -79,7 +84,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                 sfx.playTargetLock();
                 onOpenLanguageModal();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
             >
               <Globe2 className="w-3.5 h-3.5 text-blue-600" />
               <span>
@@ -95,11 +100,11 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                   sfx.playWarning();
                   onLogout();
                 }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
-                title="Log out of Worker Profile"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+                title={t.logout}
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Logout</span>
+                <span className="hidden sm:inline">{t.logout}</span>
               </button>
             )}
           </div>
@@ -107,38 +112,37 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
       </div>
 
       {/* Worker Greeting & ID Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs relative overflow-hidden">
-        {/* Subtle decorative accent */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-700 via-blue-500 to-orange-500" />
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-slate-900" />
 
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3.5">
             <div className="relative">
-              <div className="w-13 h-13 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 shadow-xs">
+              <div className="w-13 h-13 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 shadow-xs">
                 <HardHat className="w-7 h-7" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">
-                ✓
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-md bg-emerald-600 border border-white flex items-center justify-center">
+                <Check className="w-3 h-3 text-white" />
               </div>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-semibold text-slate-400">
-                  Worker ID:
+                  {language === 'hi' ? 'श्रमिक आईडी:' : language === 'sat' ? 'ᱠᱟᱹᱢᱤᱭᱟᱹ ᱟᱭᱰᱤ:' : 'Worker ID:'}
                 </span>
                 <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                   {worker.id}
                 </span>
               </div>
               <h2 className="text-xl font-bold text-slate-900 mt-0.5">
-                Welcome, {worker.name} 👋
+                {t.welcome}, {worker.name}
               </h2>
               <p className="text-xs text-slate-500">
-                {worker.role} • <span className="text-slate-700 font-medium">{worker.company}</span>
+                {worker.role} · <span className="text-slate-700 font-medium">{worker.company}</span>
               </p>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                📍 {worker.mineBlock}, {worker.location}
+                {worker.mineBlock}, {worker.location}
               </p>
             </div>
           </div>
@@ -147,52 +151,70 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
         {/* Offline Status Badge */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 text-emerald-700 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+            <span className="w-2 h-2 rounded-xs bg-emerald-600 inline-block" />
             <span className="text-[11px] sm:text-xs">
               {t.offlineStatus}
             </span>
           </div>
           <div className="text-[11px] text-slate-500 flex items-center gap-1">
             <Wifi className="w-3.5 h-3.5 text-slate-400" />
-            <span>Local Mine Cache Active</span>
+            <span>
+              {language === 'hi' ? 'स्थानीय खदान डेटा सुरक्षित' : language === 'sat' ? 'ᱠᱷᱟᱫᱟᱱ ᱰᱮᱴᱟ ᱨᱩᱠᱷᱤᱭᱟᱹ' : 'Local Mine Cache Active'}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Progress Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              {t.progressTitle}
-            </h3>
+      {/* Visual Progress Tracker: Overall Completion & Individual Module Mastery */}
+      <VisualProgressTracker
+        worker={worker}
+        language={language}
+        modules={modulesData}
+        onStartModule={onStartModule}
+        onViewCertificate={onViewCertificate}
+        onOpenARSimulation={onOpenARSimulation}
+      />
+
+      {/* AR Camera Simulator Studio Quick Launch Card (75% Camera / 25% Quiz) */}
+      {onOpenARSimulation && (
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xs text-white flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-300 shrink-0">
+              <Camera className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs sm:text-sm font-bold text-white">
+                  {language === 'hi' ? 'एआर सिमुलेशन स्टूडियो (75/25)' : language === 'sat' ? 'AR ᱥᱤᱢᱩᱞᱮᱥᱚᱱ ᱥᱴᱩᱰᱤᱭᱳ' : 'AR Simulation Screen (75/25)'}
+                </h4>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                  {language === 'hi' ? 'केवल पिछला कैमरा' : language === 'sat' ? 'ᱛᱟᱭᱚᱢ ᱠᱮᱢᱮᱨᱟ' : 'REAR CAMERA'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                {language === 'hi'
+                  ? '75% कैमरा व 25% प्रश्नोत्तरी, लैंडस्केप/पोर्ट्रेट लेआउट एवं कार्यक्षेत्र स्कैनिंग'
+                  : language === 'sat'
+                  ? '75% ᱠᱮᱢᱮᱨᱟ ᱟᱨ 25% ᱠᱩᱠᱞᱤ, ᱞᱮᱱᱰᱥᱠᱮᱯ/ᱯᱚᱨᱴᱨᱮᱴ ᱥᱟᱶ ᱠᱷᱟᱫᱟᱱ ᱥᱠᱮᱱ'
+                  : 'Launch 75% camera simulator with SLAM surface tracking, 25% quiz sheet & orientation controls'}
+              </p>
+            </div>
           </div>
-          <span className="text-xs font-bold text-blue-700">
-            {completedCount} / {totalModules} Modules Completed ({progressPercent}%)
-          </span>
-        </div>
 
-        {/* Clean Blue Progress Bar */}
-        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden flex gap-1">
-          {modulesData.map((m, idx) => {
-            const isDone = worker.completedModules.includes(m.id);
-            return (
-              <div
-                key={m.id}
-                className={`h-full rounded-full transition-all duration-500 flex-1 ${
-                  isDone ? 'bg-blue-600' : 'bg-slate-200'
-                }`}
-              />
-            );
-          })}
+          <button
+            type="button"
+            id="dashboard-open-ar-btn"
+            onClick={() => {
+              sfx.playSuccess();
+              onOpenARSimulation();
+            }}
+            className="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs tracking-wider uppercase shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+            <span>{language === 'hi' ? 'शुरू करें' : language === 'sat' ? 'ᱮᱦᱚᱵ' : 'Launch'}</span>
+          </button>
         </div>
-
-        <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
-          <span>{completedCount} {language === 'hi' ? 'मॉड्यूल प्रमाणित' : language === 'sat' ? 'ᱦᱟᱹᱴᱤᱧ ᱯᱩᱨᱟᱹᱣ' : 'Modules Certified'}</span>
-          <span>{totalModules - completedCount} {language === 'hi' ? 'मॉड्यूल शेष' : language === 'sat' ? 'ᱦᱟᱹᱴᱤᱧ ᱵᱟᱹᱠᱤ' : 'Pending Certification'}</span>
-        </div>
-      </div>
+      )}
 
       {/* Training Modules Cards Section */}
       <div className="space-y-3">
@@ -201,7 +223,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
             {language === 'hi' ? 'व्यावहारिक एआर सुरक्षा मॉड्यूल' : language === 'sat' ? 'AR ᱥᱩᱨᱚᱠᱷᱭᱟ ᱦᱟᱹᱴᱤᱧ' : 'Interactive AR Safety Modules'}
           </h3>
           <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-            DGMS Compliant
+            {language === 'hi' ? 'डीजीएमएस अनुपालन' : language === 'sat' ? 'DGMS ᱱᱤᱭᱚᱢ' : 'DGMS Compliant'}
           </span>
         </div>
 
@@ -213,14 +235,14 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
           return (
             <div
               key={module.id}
-              className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-300 transition-all shadow-xs overflow-hidden"
+              className="bg-white rounded-xl border border-slate-200/90 hover:border-blue-300 transition-colors shadow-xs overflow-hidden"
             >
               <div className="p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3.5">
-                    {/* Safety Icon with subtle tint */}
+                    {/* Safety Icon */}
                     <div
-                      className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${
+                      className={`w-11 h-11 rounded-lg flex items-center justify-center shrink-0 border ${
                         isCompleted
                           ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
                           : isFire
@@ -241,7 +263,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                           {isFire ? t.fireModuleTitle : t.gasModuleTitle}
                         </h4>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
                             isCompleted
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               : 'bg-slate-100 text-slate-600 border border-slate-200'
@@ -260,13 +282,16 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                           <Clock className="w-3.5 h-3.5 text-slate-400" />
                           {module.estimatedTime}
                         </span>
-                        <span>•</span>
-                        <span>{module.scenarios.length} AR Scenarios</span>
+                        <span>·</span>
+                        <span>
+                          {module.scenarios.length}{' '}
+                          {language === 'hi' ? 'एआर परिदृश्य' : language === 'sat' ? 'AR ᱫᱟᱹᱭᱠᱟᱹ' : 'AR Scenarios'}
+                        </span>
                         {score !== undefined && (
                           <>
-                            <span>•</span>
+                            <span>·</span>
                             <span className="text-emerald-700 font-bold">
-                              Score: {score}%
+                              {language === 'hi' ? 'अंक:' : language === 'sat' ? 'ᱚᱨᱡᱚ:' : 'Score:'} {score}%
                             </span>
                           </>
                         )}
@@ -279,7 +304,13 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                 <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
                   <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Statutory Certification on &ge;70%</span>
+                    <span>
+                      {language === 'hi'
+                        ? '≥70% अंक पर वैधानिक प्रमाणन'
+                        : language === 'sat'
+                        ? '≥70% ᱨᱮ ᱥᱟᱨᱴᱤᱯᱷᱤᱠᱮᱴ'
+                        : 'Statutory Certification on ≥70%'}
+                    </span>
                   </div>
 
                   <button
@@ -289,7 +320,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                       sfx.playTargetLock();
                       onStartModule(module.id);
                     }}
-                    className="py-2.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <span>{isCompleted ? t.retakeTraining : t.startTraining}</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -302,7 +333,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
       </div>
 
       {/* Certificates Section */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Award className="w-4 h-4 text-blue-600" />
@@ -311,7 +342,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
             </h3>
           </div>
           <span className="text-[10px] text-slate-400 font-medium">
-            QR Tamper-Proof
+            {language === 'hi' ? 'छेड़छाड़-मुक्त क्यूआर' : language === 'sat' ? 'QR ᱴᱮᱢᱯᱟᱨ-ᱯᱨᱩᱯᱷ' : 'QR Tamper-Proof'}
           </span>
         </div>
 
@@ -320,7 +351,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
             {worker.certificates.map((cert) => (
               <div
                 key={cert.id}
-                className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 hover:border-blue-300 transition-colors flex items-center justify-between gap-3"
+                className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 hover:border-blue-300 transition-colors flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
@@ -328,10 +359,11 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-slate-800">
-                      {cert.moduleTitle}
+                      {cert.moduleId === 'fire-safety' ? t.fireModuleTitle : t.gasModuleTitle}
                     </h4>
                     <p className="text-[11px] text-slate-500 font-mono">
-                      ID: {cert.id} • Score: <span className="text-emerald-700 font-bold">{cert.score}%</span>
+                      ID: {cert.id} · {language === 'hi' ? 'अंक:' : language === 'sat' ? 'ᱚᱨᱡᱚ:' : 'Score:'}{' '}
+                      <span className="text-emerald-700 font-bold">{cert.score}%</span>
                     </p>
                   </div>
                 </div>
@@ -345,7 +377,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                       onOpenQRVerification(cert.id);
                     }}
                     className="p-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors cursor-pointer shadow-xs"
-                    title="Scan / Verify QR Code"
+                    title={t.verifyCertificate}
                   >
                     <QrCode className="w-4 h-4 text-blue-600" />
                   </button>
@@ -359,16 +391,20 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({
                     }}
                     className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors cursor-pointer"
                   >
-                    VIEW
+                    {language === 'hi' ? 'देखें' : language === 'sat' ? 'ᱧᱮᱞ' : 'VIEW'}
                   </button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-center">
             <p className="text-xs text-slate-500">
-              Complete the Fire or Gas safety module assessment to earn your official Government of Jharkhand QR safety certificate.
+              {language === 'hi'
+                ? 'अग्निशामक अथवा गैस सुरक्षा मॉड्यूल मूल्यांकन पूरा करके आधिकारिक झारखंड सरकार क्यूआर सुरक्षा प्रमाणपत्र प्राप्त करें।'
+                : language === 'sat'
+                ? 'ᱥᱮᱸᱜᱮᱞ ᱥᱮ ᱵᱤᱥ ᱜᱮᱥ ᱦᱟᱹᱴᱤᱧ ᱯᱩᱨᱟᱹᱣ ᱠᱟᱛᱮ ᱥᱚᱨᱠᱟᱨᱤ QR ᱥᱟᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱧᱟᱢ ᱢᱮ᱾'
+                : 'Complete the Fire or Gas safety module assessment to earn your official Government of Jharkhand QR safety certificate.'}
             </p>
           </div>
         )}

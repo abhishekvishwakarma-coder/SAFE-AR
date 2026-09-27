@@ -37,7 +37,7 @@ export const DigitalCertificateView: React.FC<DigitalCertificateViewProps> = ({
       score: certificate.score,
       issueDate: certificate.issueDate,
       authority: 'DGMS Jharkhand',
-      project: 'SAFEAR Industrial Safety App',
+      project: 'Minding Mines',
       status: 'VALID',
     });
 
@@ -111,22 +111,22 @@ export const DigitalCertificateView: React.FC<DigitalCertificateViewProps> = ({
         <div className="text-center relative z-10 space-y-1.5 border-b border-slate-200 pb-5">
           {/* Official Competency Credential Pill */}
           <div className="flex items-center justify-center gap-2 mb-1.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-[11px] font-bold tracking-wide uppercase">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-100 border border-slate-300 text-slate-800 text-[11px] font-bold tracking-wide uppercase">
               DGMS Approved Competency Credential
             </span>
           </div>
 
           <div className="flex items-center justify-center gap-2 pt-1">
-            <div className="w-8 h-8 rounded-lg bg-blue-900 text-white flex items-center justify-center font-extrabold text-sm">
-              SA
+            <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+              MM
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              SAFE<span className="text-blue-600">AR</span>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Minding Mines
             </h2>
           </div>
 
           <p className="text-xs sm:text-sm font-semibold text-slate-700">
-            Government of Jharkhand • Mining &amp; Industrial Safety Initiative
+            Government of Jharkhand · Mining &amp; Industrial Safety Initiative
           </p>
 
           <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-950 pt-2 tracking-wide uppercase">

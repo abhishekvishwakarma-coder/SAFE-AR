@@ -57,7 +57,7 @@ export const QRVerificationModal: React.FC<QRVerificationModalProps> = ({
                 CERTIFICATE VERIFICATION
               </h2>
               <p className="text-xs text-slate-500">
-                SAFEAR Credential Audit Registry • Online &amp; Offline
+                Minding Mines Credential Audit Registry · Online &amp; Offline
               </p>
             </div>
           </div>
@@ -73,18 +73,18 @@ export const QRVerificationModal: React.FC<QRVerificationModalProps> = ({
         </div>
 
         <div className="p-5 sm:p-6 space-y-4">
-          {/* Green Verification Indicator Banner */}
+          {/* Verification Indicator Banner */}
           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700">
+              <div className="w-9 h-9 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-xs font-bold text-emerald-900 tracking-wide">
-                  ✓ VALID CERTIFICATE
+                  VALID CERTIFICATE
                 </span>
                 <p className="text-xs text-emerald-700 font-medium">
-                  Verified with SAFEAR Demonstration Registry
+                  Verified with Minding Mines Registry
                 </p>
               </div>
             </div>

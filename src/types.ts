@@ -1,4 +1,42 @@
-export type Language = 'en' | 'hi' | 'sat';
+export type Language = 'en' | 'hi' | 'khr' | 'nag' | 'sat';
+
+export interface GasReading {
+  gas: 'CH4' | 'O2' | 'CO' | 'H2S';
+  formula: string;
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: string;
+  alarmThreshold: number;
+  criticalThreshold: number;
+  status: 'SAFE' | 'WARNING' | 'CRITICAL';
+  dgmsRule: string;
+}
+
+export interface EvacuationTarget {
+  id: 'fresh-air-base' | 'refuge-chamber' | 'self-rescuer-station';
+  name: string;
+  distanceMeters: number;
+  bearingDeg: number;
+  description: string;
+  dgmsRequirement: string;
+  status: 'ACTIVE_POSITIVE_PRESSURE' | 'SEALED_O2_READY' | 'CACHE_VERIFIED';
+}
+
+export interface DGMSVTCPass {
+  passNumber: string;
+  workerId: string;
+  workerName: string;
+  designation: string;
+  vtcCenter: string;
+  moduleId: string;
+  moduleTitle: string;
+  score: number;
+  completionTimestamp: string;
+  validUntil: string;
+  dgmsRegulationRef: string;
+  qrPayload: string;
+}
 
 export interface WorkerProfile {
   id: string;
