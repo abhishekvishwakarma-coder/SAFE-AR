@@ -18,312 +18,63 @@ class SoundEffects {
     return this.ctx;
   }
 
-  // Positive verification chime
+  // Positive verification chime (silenced per user request)
   playSuccess(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, now); // D5
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.36);
-    } catch {
-      // AudioContext not allowed or disabled
-    }
+    // Sound silenced
   }
 
-  // Warning or error buzzer
+  // Warning or error buzzer (silenced per user request)
   playWarning(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, now); // A3
-      osc.frequency.linearRampToValueAtTime(160, now + 0.25);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.32);
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  // AR Reticle Lock / Target Ping / Click
+  // AR Reticle Lock / Target Ping / Click (silenced per user request)
   playTargetLock(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(980, now);
-      osc.frequency.exponentialRampToValueAtTime(1480, now + 0.05);
-      gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.09);
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  // Emergency Alarm pulse
+  // Emergency Alarm pulse (silenced per user request)
   playAlarmBurst(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      for (let i = 0; i < 2; i++) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(i % 2 === 0 ? 800 : 600, now + i * 0.15);
-        gain.gain.setValueAtTime(0.08, now + i * 0.15);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + (i + 1) * 0.15);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + i * 0.15);
-        osc.stop(now + (i + 1) * 0.15);
-      }
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  // Metallic safety pin pull
+  // Metallic safety pin pull (silenced per user request)
   playPinPull(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      // High metallic chime
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1800, now);
-      osc.frequency.exponentialRampToValueAtTime(2600, now + 0.08);
-      osc.frequency.exponentialRampToValueAtTime(1400, now + 0.18);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.23);
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  private sprayNode: { osc: AudioNode; gain: GainNode } | null = null;
-
-  // Pressurized extinguisher spray whoosh
+  // Pressurized extinguisher spray whoosh (silenced per user request)
   startSpray(): void {
-    try {
-      if (this.sprayNode) return;
-      const ctx = this.getContext();
-      if (!ctx) return;
-
-      // White noise buffer for realistic high-pressure gas spray
-      const bufferSize = ctx.sampleRate * 2;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
-
-      const whiteNoise = ctx.createBufferSource();
-      whiteNoise.buffer = noiseBuffer;
-      whiteNoise.loop = true;
-
-      // Bandpass filter to model powder nozzle hiss
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(1200, ctx.currentTime);
-      filter.Q.setValueAtTime(1.2, ctx.currentTime);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
-
-      whiteNoise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-
-      whiteNoise.start();
-      this.sprayNode = { osc: whiteNoise, gain };
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
   stopSpray(): void {
-    try {
-      if (this.sprayNode) {
-        const ctx = this.getContext();
-        const now = ctx ? ctx.currentTime : 0;
-        this.sprayNode.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-        setTimeout(() => {
-          try {
-            (this.sprayNode?.osc as AudioBufferSourceNode)?.stop();
-          } catch {
-            // ignore
-          }
-          this.sprayNode = null;
-        }, 120);
-      }
-    } catch {
-      this.sprayNode = null;
-    }
+    // Sound silenced
   }
 
-  // Sizzling steam when embers extinguished
+  // Sizzling steam when embers extinguished (silenced per user request)
   playSteamHiss(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const bufferSize = ctx.sampleRate * 0.4;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'highpass';
-      filter.frequency.setValueAtTime(2400, ctx.currentTime);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.07, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.38);
-
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-
-      noise.start();
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  // Multi-Gas Detector High-Pitched Toxic Alert Chirp
+  // Multi-Gas Detector High-Pitched Toxic Alert Chirp (silenced per user request)
   playGasAlarmBeep(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(2800, now);
-      osc.frequency.setValueAtTime(3200, now + 0.04);
-      gain.gain.setValueAtTime(0.09, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.09);
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  // SCBA Positive-Pressure Demand Valve Breath
+  // SCBA Positive-Pressure Demand Valve Breath (silenced per user request)
   playSCBABreath(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      const bufferSize = ctx.sampleRate * 0.5;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(700, now);
-      filter.Q.setValueAtTime(2.0, now);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.02, now);
-      gain.gain.linearRampToValueAtTime(0.14, now + 0.15);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
-
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      noise.start(now);
-      noise.stop(now + 0.5);
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  // Ventilation Fan / Air Blower starting
+  // Ventilation Fan / Air Blower starting (silenced per user request)
   playVentBlower(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(110, now);
-      osc.frequency.exponentialRampToValueAtTime(280, now + 0.6);
-      gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.72);
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 
-  // Emergency Egress Beacon Identified (Chime + confirmation tone)
+  // Emergency Egress Beacon Identified (silenced per user request)
   playEgressIdentified(): void {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + i * 0.08);
-        gain.gain.setValueAtTime(0.1, now + i * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + (i + 1) * 0.12);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + i * 0.08);
-        osc.stop(now + (i + 1) * 0.14);
-      });
-    } catch {
-      // ignore
-    }
+    // Sound silenced
   }
 }
 

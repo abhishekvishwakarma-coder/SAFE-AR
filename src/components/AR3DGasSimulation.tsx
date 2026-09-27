@@ -1098,14 +1098,6 @@ export const AR3DGasSimulation: React.FC<AR3DGasSimulationProps> = ({
     };
   }, []);
 
-  // Periodic Gas Detector Chirp
-  useEffect(() => {
-    if (gasCloudDensity < 20 || currentStep === 'CLEARED') return;
-    const interval = setInterval(() => {
-      sfx.playGasAlarmBeep();
-    }, 1100);
-    return () => clearInterval(interval);
-  }, [gasCloudDensity, currentStep]);
 
   // Pointer drag listeners for 360-degree interactive 3D Orbit
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -1228,13 +1220,6 @@ export const AR3DGasSimulation: React.FC<AR3DGasSimulationProps> = ({
     announceStep('SAMPLE');
   };
 
-  // Initial step announcement
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      announceStep('SAMPLE');
-    }, 700);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className={`relative w-full h-full select-none overflow-hidden ${className}`}>

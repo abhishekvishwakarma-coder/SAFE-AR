@@ -1327,13 +1327,6 @@ export const AR3DFireSimulation: React.FC<AR3DFireSimulationProps> = ({
     announceCurrentStep('PULL');
   };
 
-  // Initial step announcement
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      announceCurrentStep('PULL');
-    }, 700);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className={`relative w-full h-full select-none overflow-hidden ${className}`}>
